@@ -1,19 +1,15 @@
 import os
+import warnings
+import docker
+import docker.errors
 
 from configparser import ConfigParser as CustomConfigParser
 
-from keys import generate_wireguard_keys
+from .keys import generate_wireguard_keys
 
 CustomConfigParser.optionxform = staticmethod(lambda option: option)
 
-os.environ["PUID"] = "1000"
-os.environ["PGID"] = "1000"
-os.environ["TZ"] = "Europe/Moscow"
-os.environ["SERVERURL"] = "127.0.0.1"
-os.environ["SERVERPORT"] = "51820"
-os.environ["PEERS"] = "2"
-os.environ["PEERDNS"] = "auto"
-os.environ["INTERNAL_SUBNET"] = "10.13.13.0"
+__all__ = ("Peer", "ConfigFolder", "WG0")
 
 class _Interface(object):
     LAST_PEER_ID = 0
@@ -62,6 +58,7 @@ class _Peer(object):
 
 class _Config(object):
     def __init__(self, path: str = None):
+        _Interface.add_peer()
         self.path = path
 
         _config = self._parse_config()
@@ -69,7 +66,6 @@ class _Config(object):
         self.peer = _Peer(_config.get("Peer", {}))
         self.interface = _Interface(_config.get("Interface", {}))
 
-        self.interface.add_peer()
 
     def _get_config(self):
         return {"Peer": self.peer(), "Interface": self.interface()}
@@ -84,8 +80,19 @@ class _Config(object):
             section: dict(parsed_config.items(section))
             for section in parsed_config.sections()
         }
-        print(parsed_config_dict)
+
         return parsed_config_dict
+
+    @property
+    def wg_peer(self):
+        peer = "[Interface]\n"
+        for key, value in self.interface().items():
+            peer += f"{key}={value}\n"
+        peer += "\n[Peer]\n"
+
+        for key, value in self.peer().items():
+            peer += f"{key}={value}\n"
+        return peer
 
     def __call__(self):
         config_parser = CustomConfigParser()
@@ -102,9 +109,14 @@ class Peer(object):
         self.folder_path = path
         self.path = os.path.join(path, f"peer{self.id}", f"peer{self.id}.conf")
         self.config = _Config(self.path)
-        self._private_key, self._public_key, self._preshared_key = self._load_keys()
+        self._private_key: str = ...
+        self._public_key: str = ...
+        self._preshared_key: str = ...
 
-    def to_conf(self):
+        self.private_key, self.public_key, self.preshared_key = self._load_keys()
+
+    @property
+    def conf(self):
         peer = ("[Peer]\nPublicKey = {public_key}\n"
                 "PresharedKey = {preshared_key}\n"
                 "AllowedIPs = {allowed_ips}/32\n")
@@ -114,6 +126,10 @@ class Peer(object):
             allowed_ips=self.config.interface.address
         )
 
+    @property
+    def wg_peer(self):
+        return self.config.wg_peer
+
     def _load_keys(self) -> [str, str, str]:
         if not os.path.exists(os.path.join(self.folder_path, f"peer{self.id}")):
             return generate_wireguard_keys()
@@ -121,7 +137,7 @@ class Peer(object):
         public_key_path = os.path.join(self.folder_path, f"peer{self.id}", f"publickey-peer{self.id}")
         with open(public_key_path, 'r') as public_key:
             public_key = public_key.read().strip()
-        print(public_key)
+
         return self.config.interface.privatekey, public_key, self.config.peer.presharedkey
 
     def __repr__(self):
@@ -195,16 +211,15 @@ class ConfigFolder(object):
                 peer_id = int(folder[4:])
                 self.peers.add(Peer(peer_id, self.path))
 
-    def new_peer(self):
-        new_peer = Peer(_Interface.add_peer(), self.path)
-
+    def new_peer(self) -> Peer:
+        new_peer = Peer(_Interface.LAST_PEER_ID + 1, self.path)
         new_peer.config.peer.publickey = self.SERVER_PUBLIC_KEY
 
         self.peers.add(new_peer)
         return new_peer
 
     @classmethod
-    def _load_server_keys(cls, path):
+    def _load_server_keys(cls, path: str) -> None:
         with open(os.path.join(path, "server", "publickey-server"), 'r') as server_public_key:
             cls.SERVER_PUBLIC_KEY = server_public_key.read().strip()
 
@@ -212,11 +227,14 @@ class ConfigFolder(object):
             cls.SERVER_PRIVATE_KEY = server_private_key.read().strip()
 
 class WG0(ConfigFolder):
+    CONTAINER_NAME = ...
     def __init__(self, path: str):
         super().__init__(path)
+        self._load_container()
         self.server_config_path = os.path.join(path, "wg_confs", "wg0.conf")
         self.address = ".".join(os.environ.get("INTERNAL_SUBNET").split(".")[:-1] + ["1"])
         self.listenport = os.environ.get("SERVERPORT")
+        self._client = docker.from_env()
 
     def update(self):
         with open(self.server_config_path, 'w') as config_file:
@@ -231,8 +249,19 @@ class WG0(ConfigFolder):
                               "iptables -D FORWARD -o %i -j ACCEPT; iptables "
                               "-t nat -D POSTROUTING -o eth+ -j MASQUERADE\n\n")
             for peer in self.peers:
-                config_file.write(peer.to_conf())
+                config_file.write(peer.conf)
                 config_file.write("\n")
+        try:
+            container = self._client.containers.get(self.CONTAINER_NAME)
+            container.restart()
+            # ...
+        except docker.errors.NotFound:
+            warnings.warn("Docker container not found")
+
+
+    @classmethod
+    def _load_container(cls):
+        cls.CONTAINER_NAME = os.environ.get("WG_CONTAINER", "wireguard")
 
 if __name__ == '__main__':
     config = WG0("../config/")
