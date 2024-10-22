@@ -52,5 +52,5 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             cd /vpn
-            sudo docker compose -f docker-compose.yaml -p peers-generator pull
-            sudo docker compose -f docker-compose.yaml -d
+            sudo docker-compose -f docker-compose.yml -p peers-generator pull
+            sudo docker-compose -f docker-compose.yml -d
