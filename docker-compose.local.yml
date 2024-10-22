@@ -4,18 +4,10 @@ services:
   wireguard:
     image: linuxserver/wireguard
     container_name: wireguard
+    env_file: .env
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Moscow
-      - SERVERURL=127.0.0.1
-      - SERVERPORT=51820
-      - PEERS=2
-      - PEERDNS=auto
-      - INTERNAL_SUBNET=10.13.13.0
     volumes:
       - ./config:/config
       - /lib/modules:/lib/modules:ro
@@ -26,8 +18,10 @@ services:
     restart: always
   peers-generator:
     build: peers-generator
+    env_file: .env
     volumes:
       - ./config:/config
+      - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
   default:
