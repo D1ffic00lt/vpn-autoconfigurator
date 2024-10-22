@@ -12,10 +12,12 @@ services:
       - ./config:/config
       - /lib/modules:/lib/modules:ro
     ports:
-      - 51820:51820/udp
+      - ${SERVERPORT}:${SERVERPORT}/udp
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
     restart: always
+    networks:
+      - wg
   peers-generator:
     build: peers-generator
     env_file: .env
@@ -24,5 +26,5 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
-  default:
+  wg:
     driver: bridge
