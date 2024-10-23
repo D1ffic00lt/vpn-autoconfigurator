@@ -21,10 +21,19 @@ services:
   peers-generator:
     build: peers-generator
     env_file: .env
+    environment:
+      TOKEN: /run/secrets/telegram-token
     volumes:
       - ./config:/config
       - /var/run/docker.sock:/var/run/docker.sock
+    secrets:
+      - telegram-token
 
 networks:
   wg:
     driver: bridge
+
+secrets:
+  telegram-token:
+    file: ./secrets/telegram-token.txt
+
