@@ -3,15 +3,17 @@ name: Deploy services
 on:
   push:
     branches: [ 'main' ]
+
 env:
   REGISTRY: ghcr.io
-  PEER_IMAGE_NAME: "peer-generator"
+  PEER_IMAGE_NAME: "peers-generator"
 
 permissions:
   contents: read
+  packages: write
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -27,15 +29,30 @@ jobs:
         uses: docker/setup-qemu-action@v1
 
       - name: "Set up Docker Buildx"
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
+
+      - name: "Log in to GitHub Container Registry"
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Build and push | peers-generator"
+        if: steps.changes.outputs.peers-generator == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: peers-generator/
+          file: peers-generator/Dockerfile
+          tags: ${{ env.REGISTRY }}/{{ github.repository_owner }}/${{ env.PEER_IMAGE_NAME }}:latest
+          push: true
 
       - name: "Login to Docker Hub"
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: "Build and push | peers_generator"
+      - name: "Build and push | peers-generator"
         if: steps.changes.outputs.peers-generator == 'true'
         uses: docker/build-push-action@v4
         with:
@@ -54,9 +71,3 @@ jobs:
             cd /vpn
             sudo docker-compose -f docker-compose.yml -p peers-generator pull
             sudo docker-compose -f docker-compose.yml up -d
-      - name: publish
-        uses: soltys/publish-docker-compose@v1.0.0
-        with:
-          version: 'latest'
-          docker_compose: 'docker-compose.yml'
-          repo_token: "${{ secrets.PACKAGES_TOKEN }}"
