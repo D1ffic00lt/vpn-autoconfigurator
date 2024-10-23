@@ -53,4 +53,4 @@ jobs:
           script: |
             cd /vpn
             sudo docker-compose -f docker-compose.yml -p peers-generator pull
-            sudo docker-compose -f docker-compose.yml up
+            sudo docker-compose -f docker-compose.yml up -d
