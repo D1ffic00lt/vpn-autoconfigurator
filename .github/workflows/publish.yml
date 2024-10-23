@@ -54,3 +54,9 @@ jobs:
             cd /vpn
             sudo docker-compose -f docker-compose.yml -p peers-generator pull
             sudo docker-compose -f docker-compose.yml up -d
+      - name: publish
+        uses: soltys/publish-docker-compose@v1.0.0
+        with:
+          version: 'latest'
+          docker_compose: 'docker-compose.yml'
+          repo_token: "${{ secrets.PACKAGES_TOKEN }}"
