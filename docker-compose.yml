@@ -21,6 +21,8 @@ services:
   peers-generator:
     image: d1ffic00lt/peers-generator:latest
     env_file: .env
+    environment:
+      TOKEN: /run/secrets/telegram-token
     volumes:
       - ./config:/config
       - /var/run/docker.sock:/var/run/docker.sock
