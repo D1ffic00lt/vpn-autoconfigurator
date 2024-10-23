@@ -2,7 +2,7 @@ version: '3'
 
 services:
   wireguard:
-    image: linuxserver/wireguard
+    image: ghcr.io/linuxserver/wireguard
     container_name: wireguard
     env_file: .env
     cap_add:
@@ -19,7 +19,7 @@ services:
     networks:
       - wg
   peers-generator:
-    image: d1ffic00lt/peers-generator:latest
+    image: ghcr.io/d1ffic00lt/peers-generator:latest
     env_file: .env
     environment:
       TOKEN: /run/secrets/telegram-token
