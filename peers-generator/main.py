@@ -15,7 +15,9 @@ config = WG0(path)
 def start(message):
     new_peer = config.new_peer()
     new_peer()
+
     config.update()
+    
     telebot.send_message(message.chat.id, new_peer.wg_peer)
 
 if __name__ == '__main__':
