@@ -3,7 +3,10 @@ import telebot
 
 from utils import *
 
-telebot = telebot.TeleBot(token=os.environ['TELEGRAM_TOKEN'])
+with open(os.environ.get('TOKEN')) as token_file:
+    token = token_file.read()
+
+telebot = telebot.TeleBot(token=token)
 
 path = "/config" if os.path.exists("/config") else "./config"
 config = WG0(path)
