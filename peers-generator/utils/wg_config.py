@@ -3,6 +3,7 @@ import warnings
 import docker
 import docker.errors
 
+from functools import cached_property
 from configparser import ConfigParser as CustomConfigParser
 
 from .keys import generate_wireguard_keys
@@ -126,7 +127,7 @@ class Peer(object):
             allowed_ips=self.config.interface.address
         )
 
-    @property
+    @cached_property
     def wg_peer(self) -> str:
         return self.config.wg_peer
 
@@ -234,7 +235,11 @@ class WG0(ConfigFolder):
         self.server_config_path = os.path.join(path, "wg_confs", "wg0.conf")
         self.address = ".".join(os.environ.get("INTERNAL_SUBNET").split(".")[:-1] + ["1"])
         self.listenport = os.environ.get("SERVERPORT")
-        self._client = docker.from_env()
+
+        try:
+            self._client = docker.from_env()
+        except docker.errors.DockerException:
+            self._client = None
 
     def update(self) -> None:
         with open(self.server_config_path, 'w') as config_file:
@@ -254,7 +259,7 @@ class WG0(ConfigFolder):
         try:
             container = self._client.containers.get(self.CONTAINER_NAME)
             container.restart()
-        except docker.errors.NotFound:
+        except docker.errors.NotFound | AttributeError:
             warnings.warn("Docker container not found")
 
 
