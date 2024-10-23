@@ -4,7 +4,7 @@ import telebot
 from utils import *
 
 with open(os.environ.get('TOKEN')) as token_file:
-    token = token_file.read()
+    token = token_file.read().strip()
 
 telebot = telebot.TeleBot(token=token)
 
