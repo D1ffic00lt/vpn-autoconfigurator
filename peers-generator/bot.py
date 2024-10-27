@@ -2,7 +2,7 @@ from telebot import asyncio_filters
 from telebot.async_telebot import AsyncTeleBot
 from telebot.asyncio_storage import StateMemoryStorage
 
-from utils import BotConfig, WG0, StartCommand
+from utils import BotConfig, WG0, StartCommand, Validator
 
 class VPNBot(object):
     def __init__(self, token: str, config: BotConfig, wg0: WG0):
@@ -12,7 +12,8 @@ class VPNBot(object):
         self.wg0 = wg0
 
         self.start_command = StartCommand(self)
+        self.validator = Validator(self)
 
-    async def run(self):
+    async def run(self, *args, **kwargs):
         print("PROGRAM STARTED")
-        await self.client.polling()
+        await self.client.polling(*args, **kwargs)

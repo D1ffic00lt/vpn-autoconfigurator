@@ -1,7 +1,7 @@
 import asyncio
 
 from typing import Any
-from telebot.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 from ..command import BaseCommand
 from ..wg_config import Peer
@@ -14,9 +14,9 @@ class Validator(BaseCommand):
         async def validate(message: Message):
             await self._validate(message)
 
-        @self.client.message_handler(func=lambda message: True)
-        async def handle_message(message):
-            await self._handle(message)
+        @self.client.callback_query_handler(func=lambda call: True)
+        async def handle_query(call: CallbackQuery):
+            await self._handle(call)
 
     async def _validate(self, message: Message):
         for administrator_id in self.config.administrators_ids:
@@ -44,10 +44,13 @@ class Validator(BaseCommand):
         await self.client.reply_to(
             message, "Your receipt has been forwarded to the administrators!"
         )
-    async def _handle(self, message: Any):
-        if message.text.startswith("accept"):
-            client_id = int(message.text.split("accept_")[1])
-            new_peer = self.wg0.new_peer() # type: Peer
+
+    async def _handle(self, call: CallbackQuery):
+
+        if call.data.startswith("accept"):
+            client_id = int(call.data.split("accept_")[1])
+
+            new_peer = self.wg0.new_peer()  # type: Peer
             new_peer()
 
             await self.client.send_document(
@@ -60,8 +63,10 @@ class Validator(BaseCommand):
                 client_id, self._peer2qr(new_peer),
                 caption="Here is your new peer qr!"
             )
-            await self.client.send_message(message.chat.id, "Authorisation data has been sent.")
-        elif message.text.startswith("reject"):
-            client_id = int(message.text.split("accept_")[1])
-            await self.client.send_message(message.chat.id, "Rejected")
+            await self.client.send_message(call.message.chat.id, "Authorisation data has been sent.")
+            await self.client.answer_callback_query(call.id)
+        elif call.data.startswith("reject"):
+            client_id = int(call.data.split("reject_")[1])
+            await self.client.send_message(call.message.chat.id, "Rejected")
             await self.client.send_message(client_id, "Your request has been rejected.")
+            await self.client.answer_callback_query(call.id)
