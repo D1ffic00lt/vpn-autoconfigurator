@@ -9,36 +9,40 @@ class StartCommand(BaseCommand):
     def __init__(self, bot: Any):
         super().__init__(bot)
 
-        @self.client.message_handler(commands=['start'])
+        @self.client.message_handler(commands=["start"])
         async def start(message: Message) -> None:
             await self._start(message)
 
-        @self.client.message_handler(commands=['new'])
+        @self.client.message_handler(commands=["new"])
         async def new(message: Message) -> None:
             await self._new(message)
 
     async def _start(self, message: Message) -> None:
         if not self.config.administrators_ids:
             self.config.administrators_ids.append(message.from_user.id)
+            self.config.commit()
         await self.bot.client.send_message(message.chat.id, "Welcome to VPN Bot!")
 
     async def _new(self, message: Message) -> None:
         if self._check_admin_status(message):
-            new_peer = self.wg0.new_peer() # type: Peer
+            new_peer = self.wg0.new_peer()  # type: Peer
             new_peer()
+            self.wg0.update()
 
             await self.client.send_document(
-                message.chat.id, self._peer2file(new_peer),
+                message.chat.id,
+                self._peer2file(new_peer),
                 caption="Here is your new peer!",
-                visible_file_name="peer.txt"
+                visible_file_name="peer.txt",
             )
-            
+
             await self.client.send_photo(
-                message.chat.id, self._peer2qr(new_peer),
-                caption="Here is your new peer qr!"
+                message.chat.id,
+                self._peer2qr(new_peer),
+                caption="Here is your new peer qr!",
             )
             return
         await self.client.send_message(
             message.chat.id,
-            "Just send me a payslip and I'll send you the details in a little while."
+            "Just send me a payslip and I'll send you the details in a little while.",
         )
