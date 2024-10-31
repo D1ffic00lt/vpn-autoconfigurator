@@ -11,7 +11,6 @@ class TomlConfig(object):
         self._config: dict[str, Any] = {}
         self.administrators_ids: list[int] = []
 
-
     def load(self):
         if not os.path.exists(os.path.join(self.path, "config.toml")):
             self._config = {"ADMIN": {"ADMINISTRATORS_IDS": self.administrators_ids}}
@@ -48,9 +47,7 @@ class TomlConfig(object):
             case list():
                 return f"[{', '.join(self._dumps_value(v) for v in value)}]"
             case _:
-                raise TypeError(
-                    f"{type(value).__name__} {value!r} is not supported"
-                )
+                raise TypeError(f"{type(value).__name__} {value!r} is not supported")
 
 
 class BotConfig(object):
@@ -66,11 +63,16 @@ class BotConfig(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.commit()
+        return False
+
+    def commit(self):
         with open(os.path.join(self.path, "config.toml"), "+w") as config_file:
             config_file.write(self._config.dumps())
 
     def __repr__(self):
         return "BotConfig(path={})".format(self.path)
+
 
 if __name__ == "__main__":
     conf = BotConfig(path="./config.toml")
