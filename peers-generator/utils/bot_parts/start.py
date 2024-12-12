@@ -44,5 +44,5 @@ class StartCommand(BaseCommand):
             return
         await self.client.send_message(
             message.chat.id,
-            "Just send me a payslip and I'll send you the details in a little while.",
+            "You are not an administrator!",
         )
