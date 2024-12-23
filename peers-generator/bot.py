@@ -4,6 +4,7 @@ from telebot.asyncio_storage import StateMemoryStorage
 
 from utils import BotConfig, WG0, StartCommand
 
+
 class VPNBot(object):
     def __init__(self, token: str, config: BotConfig, wg0: WG0):
         self.client = AsyncTeleBot(token, state_storage=StateMemoryStorage())
@@ -15,4 +16,4 @@ class VPNBot(object):
 
     async def run(self, *args, **kwargs):
         print("PROGRAM STARTED")
-        await self.client.polling(*args, **kwargs)
+        await self.client.infinity_polling(*args, **kwargs)
