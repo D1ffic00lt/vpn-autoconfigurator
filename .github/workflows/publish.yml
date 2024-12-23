@@ -43,7 +43,6 @@ jobs:
         env:
           OWNER: '${{ github.repository_owner }}'
       - name: "Build and push | peers-generator (ghcr.io)"
-        if: steps.changes.outputs.peers-generator == 'true'
         uses: docker/build-push-action@v4
         with:
           context: peers-generator/
@@ -58,7 +57,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: "Build and push | peers-generator"
-        if: steps.changes.outputs.peers-generator == 'true'
         uses: docker/build-push-action@v4
         with:
           context: peers-generator/
