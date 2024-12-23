@@ -10,4 +10,4 @@ with open(os.environ.get('TOKEN')) as token_file:
 with BotConfig("/config") as config:
     wg0 = WG0("/config")
     bot = VPNBot(token, config, wg0)
-    asyncio.run(bot.run())
+    asyncio.run(bot.run(restart_on_change=True, skip_pending=True))
