@@ -25,6 +25,10 @@ class StartCommand(BaseCommand):
 
     async def _new(self, message: Message) -> None:
         if self._check_admin_status(message):
+            message = await self.client.send_message(
+                message.chat.id,
+                "Creating new peer...",
+            )
             new_peer = self.wg0.new_peer()  # type: Peer
             new_peer()
             self.wg0.update()
@@ -41,6 +45,7 @@ class StartCommand(BaseCommand):
                 self._peer2qr(new_peer),
                 caption="Here is your new peer qr!",
             )
+            await self.client.delete_message(message.chat.id, message.message_id)
             return
         await self.client.send_message(
             message.chat.id,
