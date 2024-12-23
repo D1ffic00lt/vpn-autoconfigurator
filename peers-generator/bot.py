@@ -2,7 +2,12 @@ from telebot import asyncio_filters
 from telebot.async_telebot import AsyncTeleBot
 from telebot.asyncio_storage import StateMemoryStorage
 
-from utils import BotConfig, WG0, StartCommand
+from utils import (
+    BotConfig,
+    WG0,
+    StartCommand,
+    SettingsCommand
+)
 
 
 class VPNBot(object):
@@ -13,6 +18,7 @@ class VPNBot(object):
         self.wg0 = wg0
 
         self.start_command = StartCommand(self)
+        self.settings_command = SettingsCommand(self)
 
     async def run(self, *args, **kwargs):
         print("PROGRAM STARTED")

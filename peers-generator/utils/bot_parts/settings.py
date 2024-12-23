@@ -14,8 +14,13 @@ class SettingsCommand(BaseCommand):
 
     async def _restart(self, message: Message) -> None:
         if self._check_admin_status(message):
+            message = await self.client.send_message(
+                message.chat.id,
+                "Restarting WireGuard...",
+            )
             self.wg0.restart()
             await self.client.send_message(message.chat.id, "WireGuard restarted!")
+            await self.client.delete_message(message.chat.id, message.message_id)
             return
         await self.client.send_message(
             message.chat.id,
