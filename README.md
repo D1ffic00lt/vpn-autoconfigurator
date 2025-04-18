@@ -1,5 +1,14 @@
 # VPN Autoconfigurator
 
+<div align="center">
+
+<img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/D1ffic00lt/vpn-autoconfigurator">
+<img alt="GitHub code size" src="https://img.shields.io/github/languages/code-size/D1ffic00lt/vpn-autoconfigurator">
+<img alt="GitHub commits stats" src="https://img.shields.io/github/commit-activity/y/D1ffic00lt/vpn-autoconfigurator">
+<img alt="GitHub License" src="https://img.shields.io/github/license/D1ffic00lt/vpn-autoconfigurator">
+
+</div>
+
 > WireGuard‑based VPN stack shipped as Docker Compose. **One‑command deploy** or build‑from‑source – your choice.
 
 ---
