@@ -1,0 +1,118 @@
+name: "Bug Report / Feature Request"
+description: "Report a reproducible problem or propose a new idea for VPN Autoconfigurator."
+labels: [ "needs triage" ]
+assignees: [ ]
+body:
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: "Type of issue"
+      description: "Select what this issue is about."
+      options:
+        - "Bug"
+        - "Feature request"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "## Environment"
+
+  - type: input
+    id: host_os
+    attributes:
+      label: "Host OS"
+      placeholder: "e.g. Ubuntu 22.04 LTS"
+    validations:
+      required: true
+
+  - type: input
+    id: architecture
+    attributes:
+      label: "Architecture"
+      placeholder: "x86_64, arm64, ..."
+    validations:
+      required: true
+
+  - type: input
+    id: docker_version
+    attributes:
+      label: "Docker version"
+      placeholder: "output of `docker --version`"
+    validations:
+      required: true
+
+  - type: input
+    id: compose_version
+    attributes:
+      label: "Docker Compose version"
+      placeholder: "output of `docker compose version`"
+    validations:
+      required: true
+
+  - type: input
+    id: project_version
+    attributes:
+      label: "Project version / image tag"
+      placeholder: "v1.0.0‑beta, commit SHA, etc."
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "A clear and concise description of the bug or feature request."
+      placeholder: "What happened? What would you like to see?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: "Steps to reproduce (for bugs)"
+      description: "Provide a minimal and precise set of commands or actions that triggers the issue."
+      placeholder: |-
+        1. …
+        2. …
+        3. …
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: "Expected behavior"
+      placeholder: "What did you expect to happen?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: "Actual behavior"
+      placeholder: "What actually happened?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs / Screenshots"
+      description: "Paste relevant log output (e.g. `docker-compose logs --tail=200`) or add screenshots. Use fenced blocks ```text``` for long logs."
+      placeholder: |-
+        ```text
+        …
+        ```
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: "Additional context / proposed solution"
+      description: "Add any other context, ideas, or screenshots about the feature request or bug here."
+      placeholder: "Optional"
+    validations:
+      required: false
+
